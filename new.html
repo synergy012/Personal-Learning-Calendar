@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jewish Learning Calendar</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            margin: 0;
+            padding: 10px;
+            background: #f5f5f5;
+            overflow-x: auto;
+        }
+        
+        .controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .controls h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        select, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 120px;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            border: none;
+            white-space: nowrap;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .print-btn {
+            background: #27ae60;
+        }
+        
+        .export-btn {
+            background: #27ae60;
+        }
+        
+        .export-btn:hover {
+            background: #229954;
+        }
+        
+        .calendar-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            page-break-after: always;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .calendar-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .calendar-header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .calendar-header .hebrew-month {
+            font-size: 14px;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            width: 100%;
+        }
+        
+        .calendar-cell {
+            border: 1px solid #e0e0e0;
+            min-height: 100px;
+            padding: 4px;
+            position: relative;
+            background: white;
+            overflow: hidden;
+            font-size: 10px;
+        }
+        
+        .calendar-cell.other-month {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .calendar-cell.shabbat {
+            background: #fff8dc;
+        }
+        
+        .calendar-cell.today {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+        
+        .calendar-cell.today .secular-date {
+            color: white;
+            font-weight: bold;
+        }
+        
+        .calendar-cell.today .hebrew-date {
+            color: #ecf0f1;
+        }
+        
+        .calendar-cell.today .learning-title {
+            color: white;
+        }
+        
+        .day-header {
+            background: #34495e;
+            color: white;
+            padding: 8px 2px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        
+        .date-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+        }
+        
+        .secular-date {
+            font-weight: bold;
+            font-size: 12px;
+            color: #2c3e50;
+        }
+        
+        .hebrew-date {
+            font-size: 9px;
+            color: #7f8c8d;
+            text-align: right;
+            direction: rtl;
+        }
+        
+        .holiday-name {
+            background: #e74c3c;
+            color: white;
+            padding: 1px 3px;
+            border-radius: 3px;
+            font-size: 8px;
+            margin-bottom: 2px;
+            display: block;
+            text-align: center;
+        }
+        
+        .learning-section {
+            margin-top: 3px;
+            font-size: 7px;
+            line-height: 1.1;
+        }
+        
+        .learning-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1px;
+            gap: 2px;
+        }
+        
+        .checkbox {
+            width: 8px;
+            height: 8px;
+            border: 1px solid #333;
+            display: inline-block;
+            margin-right: 2px;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+        
+        .learning-label {
+            color: #34495e;
+            font-size: 7px;
+            line-height: 1.0;
+            word-break: break-all;
+        }
+        
+        .mishnah-ref {
+            color: #e67e22;
+            font-weight: bold;
+        }
+        
+        .navi-ref {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .mb-ref {
+            color: #8e44ad;
+            font-weight: bold;
+        }
+        
+        .learning-title {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 7px;
+            margin-bottom: 2px;
+        }
+        
+        .current-position {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .current-position h3 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        .current-position div {
+            margin-bottom: 3px;
+            font-size: 12px;
+        }
+        
+        /* Mobile-specific styles */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            .controls {
+                padding: 10px;
+            }
+            
+            .controls h2 {
+                font-size: 16px;
+            }
+            
+            .control-group {
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+            
+            select, button {
+                padding: 6px 8px;
+                font-size: 12px;
+                min-width: 100px;
+            }
+            
+            .calendar-header {
+                padding: 10px;
+            }
+            
+            .calendar-header h1 {
+                font-size: 18px;
+            }
+            
+            .calendar-header .hebrew-month {
+                font-size: 12px;
+            }
+            
+            .calendar-cell {
+                min-height: 80px;
+                padding: 3px;
+                font-size: 9px;
+            }
+            
+            .day-header {
+                padding: 6px 1px;
+                font-size: 10px;
+            }
+            
+            .secular-date {
+                font-size: 11px;
+            }
+            
+            .hebrew-date {
+                font-size: 8px;
+            }
+            
+            .learning-section {
+                font-size: 6px;
+            }
+            
+            .learning-label {
+                font-size: 6px;
+            }
+            
+            .learning-title {
+                font-size: 6px;
+            }
+            
+            .checkbox {
+                width: 7px;
+                height: 7px;
+            }
+            
+            .current-position h3 {
+                font-size: 13px;
+            }
+            
+            .current-position div {
+                font-size: 11px;
+            }
+        }
+        
+        /* Extra small screens (iPhone SE, etc.) */
+        @media screen and (max-width: 375px) {
+            .calendar-cell {
+                min-height: 70px;
+                padding: 2px;
+            }
+            
+            .learning-section {
+                font-size: 5px;
+            }
+            
+            .learning-label {
+                font-size: 5px;
+            }
+            
+            .learning-title {
+                font-size: 5px;
+            }
+            
+            .secular-date {
+                font-size: 10px;
+            }
+            
+            .hebrew-date {
+                font-size: 7px;
+            }
+            
+            .day-header {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>Jewish Learning Calendar</h2>
+        
+        <div class="current-position">
+            <h3>Current Learning Position:</h3>
+            <div><strong>Mishnah:</strong> Tomorrow (July 20) - Kesubos 7:9 & 7:10</div>
+            <div><strong>Navi:</strong> Tomorrow (July 20) - Melachim II Chapter 18</div>
+            <div><strong>Mishnah Berurah:</strong> Started July 2nd - Chicago Center Amud Yomi</div>
+        </div>
+        
+        <div class="control-group">
+            <label><strong>Select Month:</strong></label>
+            <select id="monthSelect">
+                <option value="2025-7">July 2025</option>
+                <option value="2025-8">August 2025</option>
+                <option value="2025-9">September 2025</option>
+                <option value="2025-10">October 2025</option>
+                <option value="2025-11">November 2025</option>
+                <option value="2025-12">December 2025</option>
+                <option value="2026-1">January 2026</option>
+                <option value="2026-2">February 2026</option>
+                <option value="2026-3">March 2026</option>
+                <option value="2026-4">April 2026</option>
+                <option value="2026-5">May 2026</option>
+                <option value="2026-6">June 2026</option>
+            </select>
+            <button onclick="generateCalendar()">Generate Calendar</button>
+            <button class="print-btn" onclick="window.print()">Print Calendar</button>
+            <button class="export-btn" onclick="exportToCalendar()">Export to iPhone Calendar</button>
+        </div>
+    </div>
+
+    <div id="calendarOutput"></div>
+
+    <script>
+        // Mishnah order and structure
+        const mishnayos = {
+            'Kesubos': { chapters: [8, 13, 10, 13, 9, 7, 10, 8, 9, 6, 6, 4] },
+            'Nedarim': { chapters: [4, 5, 4, 8, 6, 10, 9, 7, 10, 8, 12] },
+            'Nazir': { chapters: [7, 10, 7, 7, 7, 11, 4, 2, 5] },
+            'Sotah': { chapters: [9, 6, 8, 5, 5, 4, 8, 7, 15] },
+            'Gittin': { chapters: [6, 7, 8, 9, 9, 7, 9, 10, 10] },
+            'Kiddushin': { chapters: [10, 10, 13, 14] }
+        };
+
+        // Navi books and chapters
+        const naviBooks = [
+            { name: 'Yehoshua', chapters: 24 },
+            { name: 'Shoftim', chapters: 21 },
+            { name: 'Shmuel I', chapters: 31 },
+            { name: 'Shmuel II', chapters: 24 },
+            { name: 'Melachim I', chapters: 22 },
+            { name: 'Melachim II', chapters: 25 },
+            { name: 'Yeshayahu', chapters: 66 },
+            { name: 'Yirmiyahu', chapters: 52 },
+            { name: 'Yechezkel', chapters: 48 },
+            { name: 'Hoshea', chapters: 14 },
+            { name: 'Yoel', chapters: 4 },
+            { name: 'Amos', chapters: 9 },
+            { name: 'Ovadiah', chapters: 1 },
+            { name: 'Yonah', chapters: 4 },
+            { name: 'Michah', chapters: 7 },
+            { name: 'Nachum', chapters: 3 },
+            { name: 'Chavakuk', chapters: 3 },
+            { name: 'Tzefaniah', chapters: 3 },
+            { name: 'Chaggai', chapters: 2 },
+            { name: 'Zechariah', chapters: 14 },
+            { name: 'Malachi', chapters: 3 }
+        ];
+
+        // Mishnah Berurah schedule from Chicago Center (started July 2, 2025)
+        const mishnahBerurahSchedule = {
+            '2025-07-02': 'השכמה א,א',
+            '2025-07-03': 'השכמה א,ב-ג',
+            '2025-07-04': 'השכמה א,ד-ה',
+            '2025-07-05': 'השכמה א,ו-ט',
+            '2025-07-06': 'השכמה ב,א-ה',
+            '2025-07-07': 'השכמה ב,ו-ג,ב',
+            '2025-07-08': 'השכמה ג,ג-ז',
+            '2025-07-09': 'השכמה ג,ח-יב',
+            '2025-07-10': 'השכמה ג,יג-יז',
+            '2025-07-11': 'נט״י שחרית ד,א',
+            '2025-07-12': 'נט״י שחרית ד,ב-ז',
+            '2025-07-13': 'תעניות תקמט,א-ב',
+            '2025-07-14': 'נט״י שחרית ד,ח-יג',
+            '2025-07-15': 'נט״י שחרית ד,יד-יז',
+            '2025-07-16': 'נט״י שחרית ד,יח-כא',
+            '2025-07-17': 'נט״י שחרית ד,כב-ה,א',
+            '2025-07-18': 'נט״י שחרית ו,א',
+            '2025-07-19': 'נט״י שחרית ו,ב',
+            '2025-07-20': 'נט״י שחרית ו,ג-ד',
+            '2025-07-21': 'תשעה באב תקנ,א-ב',
+            '2025-07-22': 'תשעה באב תקנ,ג-ד',
+            '2025-07-23': 'תשעה באב תקנא,א',
+            '2025-07-24': 'תשעה באב תקנא,ב',
+            '2025-07-25': 'תשעה באב תקנא,ג',
+            '2025-07-26': 'תשעה באב תקנא,ד-ז',
+            '2025-07-27': 'תשעה באב תקנא,ח-ט',
+            '2025-07-28': 'תשעה באב תקנא,י',
+            '2025-07-29': 'תשעה באב תקנא,יא-טו',
+            '2025-07-30': 'תשעה באב תקנא,טז',
+            '2025-07-31': 'תשעה באב תקנא,יז-יח',
+            '2025-08-01': 'תשעה באב תקנב,א-ב',
+            '2025-08-02': 'תשעה באב תקנב,ג-ח',
+            '2025-08-03': 'תשעה באב תקנב,ט-יב',
+            '2025-08-04': 'ציצית ח,א-ב',
+            '2025-08-05': 'ציצית ח,ג-ה',
+            '2025-08-06': 'ציצית ח,ו-ט',
+            '2025-08-07': 'ציצית ח,י-יא',
+            '2025-08-08': 'ציצית ח,יב',
+            '2025-08-09': 'ציצית ח,יג',
+            '2025-08-10': 'ציצית ח,יד',
+            '2025-08-11': 'ציצית ח,טו-יז',
+            '2025-08-12': 'ציצית ט,א',
+            '2025-08-13': 'ציצית ט,ב-ג',
+            '2025-08-14': 'ציצית ט,ד-ו',
+            '2025-08-15': 'ציצית י,א-ה',
+            '2025-08-16': 'ציצית י,ו-ז',
+            '2025-08-17': 'ציצית י,ח-י',
+            '2025-08-18': 'ציצית י,יא-יב',
+            '2025-08-19': 'ציצית יא,א',
+            '2025-08-20': 'ציצית יא,ב',
+            '2025-08-21': 'ציצית יא,ג',
+            '2025-08-22': 'ציצית יא,ד-ה',
+            '2025-08-23': 'ציצית יא,ו-ז',
+            '2025-08-24': 'ציצית יא,ח-ט',
+            '2025-08-25': 'ציצית יא,י-יא',
+            '2025-08-26': 'ציצית יא,יב-יד',
+            '2025-08-27': 'ציצית יא,טו',
+            '2025-08-28': 'ציצית יב,א (סק״ז)',
+            '2025-08-29': 'ציצית יב,א (סק״ח)-ג',
+            '2025-08-30': 'ציצית יג,א-ב',
+            '2025-08-31': 'ציצית יג,ג',
+            '2025-09-01': 'ציצית יד,א-ב',
+            '2025-09-02': 'ציצית יד,ג',
+            '2025-09-03': 'ציצית יד,ד-ה',
+            '2025-09-04': 'ציצית טו,א-ב',
+            '2025-09-05': 'ציצית טו,ג-ד',
+            '2025-09-06': 'סוכה תרכה,א',
+            '2025-09-07': 'סוכה תרכו,א',
+            '2025-09-08': 'סוכה תרכו,ב',
+            '2025-09-09': 'סוכה תרכו,ג',
+            '2025-09-10': 'סוכה תרכז,א-ב',
+            '2025-09-11': 'סוכה תרכז,ג-ד',
+            '2025-09-12': 'סוכה תרכח,א',
+            '2025-09-13': 'סוכה תרכח,ב-ג',
+            '2025-09-14': 'ראש השנה תקפא,א (סק״ח)',
+            '2025-09-15': 'ראש השנה תקפא,א (ט-יד)',
+            '2025-09-16': 'ראש השנה תקפא,ב',
+            '2025-09-17': 'ראש השנה תקפא,ג-ד',
+            '2025-09-18': 'ראש השנה תקפב,א-ב',
+            '2025-09-19': 'ראש השנה תקפב,ג-ה',
+            '2025-09-20': 'ראש השנה תקפב,ו-ט',
+            '2025-09-21': 'ראש השנה תקפג,א-ב',
+            '2025-09-22': 'ראש השנה תקפד,א',
+            '2025-09-23': 'ראש השנה תקפד,ב-ד',
+            '2025-09-24': 'תשובה תרב,א',
+            '2025-09-25': 'יום כפור תרג,א',
+            '2025-09-26': 'יום כפור תרד,א-ב',
+            '2025-09-27': 'יום כפור תרה,א',
+            '2025-09-28': 'יום כפור תרו,א-ב',
+            '2025-09-29': 'יום כפור תרו,ג-ד',
+            '2025-09-30': 'יום כפור תרז,א-ג',
+            '2025-10-01': 'יום כפור תרז,ד-ו',
+            '2025-10-02': 'סוכה תרכט,א-ג',
+            '2025-10-03': 'סוכה תרכט,ד-ו',
+            '2025-10-04': 'סוכה תרכט,ז-יא',
+            '2025-10-05': 'סוכה תרכט,יב-יז',
+            '2025-10-06': 'סוכה תרכט,יח',
+            '2025-10-07': 'סוכה תרכט,יט',
+            '2025-10-08': 'סוכה תרל,א-ב',
+            '2025-10-09': 'סוכה תרל,ג-ד',
+            '2025-10-10': 'סוכה תרל,ה',
+            '2025-10-11': 'סוכה תרל,ו-ז',
+            '2025-10-12': 'סוכה תרל,ח',
+            '2025-10-13': 'סוכה תרל,ט-יא',
+            '2025-10-14': 'סוכה תרל,יב-יג',
+            '2025-10-15': 'ציצית טו,ה-ו',
+            '2025-10-16': 'ציצית טז,א',
+            '2025-10-17': 'ציצית יז,א-ג',
+            '2025-10-18': 'ציצית יח,א-ג',
+            '2025-10-19': 'ציצית יט,א-כ,ב',
+            '2025-10-20': 'ציצית כא,א-ב',
+            '2025-10-21': 'ציצית כא,ג-כב,א',
+            '2025-10-22': 'ציצית כג,א-כד,ו',
+            '2025-10-23': 'תפילין כה,א',
+            '2025-10-24': 'תפילין כה,ב-ד'
+        };
+
+        // Jewish holidays
+        const holidays = {
+            '2025-09-15': 'ראש השנה א׳',
+            '2025-09-16': 'ראש השנה ב׳',
+            '2025-09-24': 'יום כפור',
+            '2025-09-29': 'סוכות',
+            '2025-10-05': 'שמחת תורה',
+            '2025-12-24': 'חנוכה',
+            '2026-03-13': 'פורים',
+            '2026-04-13': 'פסח'
+        };
+
+        // Current learning positions
+        let currentMishnah = { tractate: 'Kesubos', chapter: 7, mishnah: 9 };
+        let currentNavi = { book: 'Melachim II', chapter: 18 };
+
+        // Current date and navigation
+        let currentDisplayMonth = 7; // July
+        let currentDisplayYear = 2025;
+
+        // Learning progress storage
+        function saveProgress(date, learningType, isCompleted) {
+            const progressKey = `learning_${date}_${learningType}`;
+            if (isCompleted) {
+                localStorage.setItem(progressKey, 'completed');
+            } else {
+                localStorage.removeItem(progressKey);
+            }
+        }
+        
+        function getProgress(date, learningType) {
+            const progressKey = `learning_${date}_${learningType}`;
+            return localStorage.getItem(progressKey) === 'completed';
+        }
+
+        function updateMonthDisplay() {
+            const date = new Date(currentDisplayYear, currentDisplayMonth - 1, 1);
+            const monthName = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+            const displayElement = document.getElementById('currentMonthDisplay');
+            if (displayElement) {
+                displayElement.textContent = monthName;
+            }
+        }
+
+        // Link generation functions
+        function getSefariaLink(tractate, chapter, mishnah) {
+            const sefariaNames = {
+                'Kesubos': 'Ketubot',
+                'Nedarim': 'Nedarim',
+                'Nazir': 'Nazir',
+                'Sotah': 'Sotah',
+                'Gittin': 'Gittin',
+                'Kiddushin': 'Kiddushin'
+            };
+            const sefariaName = sefariaNames[tractate] || tractate;
+            return `https://www.sefaria.org/Mishnah_${sefariaName}.${chapter}.${mishnah}?lang=bi&with=all&lang2=en`;
+        }
+
+        function getMishnahBerurahLink(reference, date) {
+            // Simple approach: link to archive with clear user guidance
+            return `https://mishnaberurayomi.org/archive.php`;
+        }
+        
+        function openMishnahBerurahWithDate(reference, date, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Format date for user display
+            const displayDate = new Date(date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric'
+            });
+            
+            // Open the archive page
+            window.open('https://mishnaberurayomi.org/archive.php', '_blank');
+            
+            // Show helpful instructions
+            setTimeout(() => {
+                alert(`📚 Archive page opened!\n\nTo find today's Mishnah Berurah:\n\n🗓️ Search for: ${displayDate}\n📖 Learning: ${reference}\n\nThe archive will show you the correct PDF for this date.`);
+            }, 500);
+        }
+
+        function getNaviAudioLink(book, chapter) {
+            const baseUrl = 'https://outorah.org/author/1070';
+            const nachBookMap = {
+                'Yehoshua': 'Joshua',
+                'Shoftim': 'Judges', 
+                'Shmuel I': 'I Samuel',
+                'Shmuel II': 'II Samuel',
+                'Melachim I': 'I Kings',
+                'Melachim II': 'II Kings',
+                'Yeshayahu': 'Isaiah',
+                'Yirmiyahu': 'Jeremiah',
+                'Yechezkel': 'Ezekiel',
+                'Hoshea': 'Hosea',
+                'Yoel': 'Joel',
+                'Amos': 'Amos',
+                'Ovadiah': 'Obadiah',
+                'Yonah': 'Jonah',
+                'Michah': 'Micah',
+                'Nachum': 'Nahum',
+                'Chavakuk': 'Habakkuk',
+                'Tzefaniah': 'Zephaniah',
+                'Chaggai': 'Haggai',
+                'Zechariah': 'Zechariah',
+                'Malachi': 'Malachi'
+            };
+            
+            const nachBook = nachBookMap[book] || book;
+            return `${baseUrl}?series=8194&nachBook=${encodeURIComponent(nachBook)}&size=30`;
+        }
+
+        function toggleCheckbox(element, date, learningType) {
+            const isChecked = element.classList.contains('checked');
+            
+            if (isChecked) {
+                element.classList.remove('checked');
+                element.style.backgroundColor = 'white';
+                element.style.borderColor = '#333';
+                element.innerHTML = '';
+                saveProgress(date, learningType, false);
+            } else {
+                element.classList.add('checked');
+                element.style.backgroundColor = '#27ae60';
+                element.style.borderColor = '#27ae60';
+                element.innerHTML = '✓';
+                element.style.color = 'white';
+                element.style.fontSize = '12px';
+                element.style.fontWeight = 'bold';
+                element.style.textAlign = 'center';
+                element.style.lineHeight = '12px';
+                saveProgress(date, learningType, true);
+            }
+        }
+
+        function getNextMishnah(current) {
+            const tractate = current.tractate;
+            const chapter = current.chapter;
+            const mishnah = current.mishnah;
+            
+            const maxMishnahs = mishnayos[tractate].chapters[chapter - 1];
+            
+            if (mishnah < maxMishnahs) {
+                return { tractate, chapter, mishnah: mishnah + 1 };
+            } else if (chapter < mishnayos[tractate].chapters.length) {
+                return { tractate, chapter: chapter + 1, mishnah: 1 };
+            } else {
+                const tractateNames = Object.keys(mishnayos);
+                const currentIndex = tractateNames.indexOf(tractate);
+                if (currentIndex < tractateNames.length - 1) {
+                    const nextTractate = tractateNames[currentIndex + 1];
+                    return { tractate: nextTractate, chapter: 1, mishnah: 1 };
+                } else {
+                    return { tractate: 'Kesubos', chapter: 1, mishnah: 1 };
+                }
+            }
+        }
+
+        function getNextNavi(current) {
+            const bookIndex = naviBooks.findIndex(book => book.name === current.book);
+            const book = naviBooks[bookIndex];
+            
+            if (current.chapter < book.chapters) {
+                return { book: current.book, chapter: current.chapter + 1 };
+            } else if (bookIndex < naviBooks.length - 1) {
+                return { book: naviBooks[bookIndex + 1].name, chapter: 1 };
+            } else {
+                return { book: 'Yehoshua', chapter: 1 };
+            }
+        }
+
+        function formatMishnahRef(mishnah) {
+            return `${mishnah.tractate} ${mishnah.chapter}:${mishnah.mishnah}`;
+        }
+
+        function formatNaviRef(navi) {
+            return `${navi.book} ${navi.chapter}`;
+        }
+
+        function getHebrewDate(gregorianDate) {
+            const tenTammuz = new Date(2025, 6, 6);
+            const daysDiff = Math.floor((gregorianDate - tenTammuz) / (1000 * 60 * 60 * 24));
+            
+            let hebrewDay = 10 + daysDiff;
+            let hebrewMonth = 'תמוז';
+            
+            if (hebrewDay > 29) {
+                hebrewDay = hebrewDay - 29;
+                hebrewMonth = 'אב';
+                
+                if (hebrewDay > 29) {
+                    hebrewDay = hebrewDay - 29;
+                    hebrewMonth = 'אלול';
+                    
+                    if (hebrewDay > 29) {
+                        hebrewDay = hebrewDay - 29;
+                        hebrewMonth = 'תשרי';
+                        
+                        if (hebrewDay > 29) {
+                            hebrewDay = hebrewDay - 29;
+                            hebrewMonth = 'חשון';
+                        }
+                    }
+                }
+            } else if (hebrewDay < 1) {
+                hebrewDay = 29 + hebrewDay;
+                hebrewMonth = 'סיון';
+                
+                if (hebrewDay < 1) {
+                    hebrewDay = 29 + hebrewDay;
+                    hebrewMonth = 'אייר';
+                }
+            }
+            
+            if (hebrewDay < 1) hebrewDay = 1;
+            if (hebrewDay > 29) hebrewDay = 29;
+            
+            return `${hebrewDay} ${hebrewMonth}`;
+        }
+
+        function isShabbat(date) {
+            return date.getDay() === 6;
+        }
+
+        function isHoliday(dateStr) {
+            return holidays[dateStr] || false;
+        }
+
+        function isToday(date) {
+            const today = new Date();
+            return date.getDate() === today.getDate() &&
+                   date.getMonth() === today.getMonth() &&
+                   date.getFullYear() === today.getFullYear();
+        }
+
+        function generateCalendar() {
+            const year = currentDisplayYear;
+            const month = currentDisplayMonth;
+            
+            const date = new Date(year, month - 1, 1);
+            const monthName = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+            
+            let calendarHTML = `
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <h1>${monthName}</h1>
+                        <div class="hebrew-month">לוח לימוד יומי</div>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="day-header">Sunday</div>
+                        <div class="day-header">Monday</div>
+                        <div class="day-header">Tuesday</div>
+                        <div class="day-header">Wednesday</div>
+                        <div class="day-header">Thursday</div>
+                        <div class="day-header">Friday</div>
+                        <div class="day-header">Shabbat</div>
+            `;
+
+            const firstDay = new Date(year, month - 1, 1);
+            const startGrid = new Date(firstDay);
+            startGrid.setDate(startGrid.getDate() - firstDay.getDay());
+
+            let currentDate = new Date(startGrid);
+
+            for (let i = 0; i < 42; i++) {
+                const isCurrentMonth = currentDate.getMonth() === (month - 1);
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const holiday = isHoliday(dateStr);
+                const shabbat = isShabbat(currentDate);
+                const today = isToday(currentDate);
+                
+                let cellClass = 'calendar-cell';
+                if (!isCurrentMonth) cellClass += ' other-month';
+                if (shabbat) cellClass += ' shabbat';
+                if (holiday) cellClass += ' holiday';
+                if (today) cellClass += ' today';
+
+                let learningContent = '';
+                if (isCurrentMonth) {
+                    const july20 = new Date(2025, 6, 20);
+                    const daysDiff = Math.floor((currentDate - july20) / (1000 * 60 * 60 * 24));
+                    
+                    let dayMishnahPos = { ...currentMishnah };
+                    let dayNaviPos = { ...currentNavi };
+                    
+                    for (let j = 0; j < daysDiff; j++) {
+                        dayMishnahPos = getNextMishnah(dayMishnahPos);
+                        dayMishnahPos = getNextMishnah(dayMishnahPos);
+                        dayNaviPos = getNextNavi(dayNaviPos);
+                    }
+
+                    const mishnah1 = formatMishnahRef(dayMishnahPos);
+                    dayMishnahPos = getNextMishnah(dayMishnahPos);
+                    const mishnah2 = formatMishnahRef(dayMishnahPos);
+                    
+                    const naviRef = formatNaviRef(dayNaviPos);
+                    const mbRef = mishnahBerurahSchedule[dateStr] || 'עיין בלוח';
+
+                    const m1Checked = getProgress(dateStr, 'mishnah1') ? 'checked' : '';
+                    const m2Checked = getProgress(dateStr, 'mishnah2') ? 'checked' : '';
+                    const naviChecked = getProgress(dateStr, 'navi') ? 'checked' : '';
+                    const mbChecked = getProgress(dateStr, 'mb') ? 'checked' : '';
+
+                    const dayTitle = shabbat ? "Shabbat Learning:" : "Today's Learning:";
+
+                    const mishnah1Link = getSefariaLink(dayMishnahPos.tractate, dayMishnahPos.chapter, dayMishnahPos.mishnah);
+                    const mishnah2Pos = getNextMishnah(dayMishnahPos);
+                    const mishnah2Link = getSefariaLink(mishnah2Pos.tractate, mishnah2Pos.chapter, mishnah2Pos.mishnah);
+                    const naviAudioLink = getNaviAudioLink(dayNaviPos.book, dayNaviPos.chapter);
+                    const mbLink = getMishnahBerurahLink(mbRef, dateStr);
+
+                    learningContent = `
+                        <div class="learning-section">
+                            <div class="learning-title">${dayTitle}</div>
+                            <div class="learning-item">
+                                <span class="checkbox ${m1Checked}" onclick="toggleCheckbox(this, '${dateStr}', 'mishnah1'); event.stopPropagation(); event.preventDefault();"></span>
+                                <a href="${mishnah1Link}" target="_blank" class="learning-label mishnah-ref" title="Click to open Mishnah on Sefaria">${mishnah1}</a>
+                            </div>
+                            <div class="learning-item">
+                                <span class="checkbox ${m2Checked}" onclick="toggleCheckbox(this, '${dateStr}', 'mishnah2'); event.stopPropagation(); event.preventDefault();"></span>
+                                <a href="${mishnah2Link}" target="_blank" class="learning-label mishnah-ref" title="Click to open Mishnah on Sefaria">${mishnah2}</a>
+                            </div>
+                            <div class="learning-item">
+                                <span class="checkbox ${naviChecked}" onclick="toggleCheckbox(this, '${dateStr}', 'navi'); event.stopPropagation(); event.preventDefault();"></span>
+                                <a href="${naviAudioLink}" target="_blank" class="learning-label navi-ref" title="Click to listen to Rabbi Rosner's shiur on OU Torah">${naviRef}</a>
+                            </div>
+                            <div class="learning-item">
+                                <span class="checkbox ${mbChecked}" onclick="toggleCheckbox(this, '${dateStr}', 'mb'); event.stopPropagation(); event.preventDefault();"></span>
+                                <a href="#" onclick="openMishnahBerurahWithDate('${mbRef}', '${dateStr}', event)" class="learning-label mb-ref" title="Click to open archive and get search instructions">${mbRef}</a>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                calendarHTML += `
+                    <div class="${cellClass}">
+                        <div class="date-info">
+                            <span class="secular-date">${currentDate.getDate()}</span>
+                            <span class="hebrew-date">${getHebrewDate(currentDate)}</span>
+                        </div>
+                        ${holiday ? `<div class="holiday-name">${holiday}</div>` : ''}
+                        ${learningContent}
+                    </div>
+                `;
+
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            calendarHTML += '</div></div>';
+            document.getElementById('calendarOutput').innerHTML = calendarHTML;
+        }
+
+        function exportToCalendar() {
+            const year = currentDisplayYear;
+            const month = currentDisplayMonth;
+            
+            let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Jewish Learning Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Jewish Learning Schedule
+X-WR-TIMEZONE:America/New_York
+X-WR-CALDESC:Daily Jewish Learning: Mishnah, Navi, and Mishnah Berurah
+BEGIN:VTIMEZONE
+TZID:America/New_York
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0400
+TZNAME:EDT
+DTSTART:20070311T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0400
+TZOFFSETTO:-0500
+TZNAME:EST
+DTSTART:20071104T020000
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+END:STANDARD
+END:VTIMEZONE
+`;
+
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+            
+            for (let date = new Date(firstDay); date <= lastDay; date.setDate(date.getDate() + 1)) {
+                if (isShabbat(date)) continue;
+                
+                const dateStr = date.toISOString().split('T')[0];
+                
+                const july20 = new Date(2025, 6, 20);
+                const daysDiff = Math.floor((date - july20) / (1000 * 60 * 60 * 24));
+                
+                let dayMishnahPos = { ...currentMishnah };
+                let dayNaviPos = { ...currentNavi };
+                
+                for (let j = 0; j < daysDiff; j++) {
+                    dayMishnahPos = getNextMishnah(dayMishnahPos);
+                    dayMishnahPos = getNextMishnah(dayMishnahPos);
+                    dayNaviPos = getNextNavi(dayNaviPos);
+                }
+
+                const mishnah1 = formatMishnahRef(dayMishnahPos);
+                dayMishnahPos = getNextMishnah(dayMishnahPos);
+                const mishnah2 = formatMishnahRef(dayMishnahPos);
+                const naviRef = formatNaviRef(dayNaviPos);
+                const mbRef = mishnahBerurahSchedule[dateStr] || 'עיין בלוח';
+
+                const icsDate = date.toISOString().split('T')[0].replace(/-/g, '');
+                const uid = `learning-${icsDate}@jewishcalendar.local`;
+                
+                const description = `Daily Jewish Learning:\\n\\n` +
+                    `📖 Mishnah: ${mishnah1} & ${mishnah2}\\n` +
+                    `📜 Navi: ${naviRef}\\n` +
+                    `📚 Mishnah Berurah: ${mbRef}\\n\\n` +
+                    `Complete your daily learning and check off each section!`;
+
+                const summary = `Jewish Learning: ${mishnah1.split(' ')[0]} & ${naviRef.split(' ')[0]}`;
+
+                icsContent += `BEGIN:VEVENT
+UID:${uid}
+DTSTART;VALUE=DATE:${icsDate}
+DTEND;VALUE=DATE:${icsDate}
+SUMMARY:${summary}
+DESCRIPTION:${description}
+CATEGORIES:Jewish Learning,Education
+PRIORITY:5
+STATUS:CONFIRMED
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Time for daily Jewish learning!
+TRIGGER:-PT1H
+END:VALARM
+END:VEVENT
+`;
+            }
+
+            icsContent += 'END:VCALENDAR';
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Jewish-Learning-${year}-${month.toString().padStart(2, '0')}.ics`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert(`📅 Calendar file downloaded!\\n\\nTo add to your iPhone:\\n\\n1. Open the downloaded .ics file\\n2. Choose "Calendar" to import\\n3. Select which calendar to add events to\\n4. Tap "Add All" to import\\n\\nYour daily learning schedule is now in your iPhone calendar with reminders!`);
+        }
+
+        // Initialize calendar
+        document.addEventListener('DOMContentLoaded', function() {
+            generateCalendar();
+        });
+        
+        setTimeout(() => {
+            generateCalendar();
+        }, 100);
+    </script>
+</body>
+</html>
