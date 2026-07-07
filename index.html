@@ -442,7 +442,7 @@
             { name: 'Chaggai', chapters: 2 },
             { name: 'Zechariah', chapters: 14 },
             { name: 'Malachi', chapters: 3 },
-            { name: 'Tehillim', chapters: 150 },
+            { name: 'Tehillim 1-106', displayName: 'Tehillim', chapters: 106, startChapter: 1 },
             { name: 'Mishlei', chapters: 31 },
             { name: 'Iyov', chapters: 42 },
             { name: 'Shir HaShirim', chapters: 8 },
@@ -455,6 +455,7 @@
             { name: 'Nechemiah', chapters: 13 },
             { name: 'Divrei HaYamim I', chapters: 29 },
             { name: 'Divrei HaYamim II', chapters: 36 },
+            { name: 'Tehillim 107-150', displayName: 'Tehillim', chapters: 44, startChapter: 107 },
         ];
             // Mishnah Berurah schedule is loaded from mishnah_berurah_schedule.js,
             // which is generated from mishnah_berurah_calendar_accurate.csv.
@@ -591,8 +592,13 @@
             return `${mishnah.tractate} ${mishnah.chapter}:${mishnah.mishnah}`;
         }
 
-        function formatNaviRef(navi) {
-            return `${navi.book} ${navi.chapter}`;
+       function formatNaviRef(navi) {
+    const book = naviBooks.find(book => book.name === navi.book);
+    const displayName = book?.displayName || navi.book;
+    const startChapter = book?.startChapter || 1;
+    const displayChapter = startChapter + navi.chapter - 1;
+
+    return `${displayName} ${displayChapter}`;
         }
 
         function getSefariaLink(tractate, chapter, mishnah) {
